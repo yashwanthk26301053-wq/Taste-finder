@@ -13,13 +13,13 @@
 </style>
 </head>
 <body>
-<header><nav><a class="brand" href="taste-finder.html">TASTE FINDER</a><a class="home" href="taste-finder.html">Go to home</a></nav></header>
+<header><nav><a class="brand" href="index.html">TASTE FINDER</a><a class="home" href="index.html">Go to home</a></nav></header>
 <main id="content"></main>
 <footer>Taste Finder · Static recipe page</footer>
 <script>
 const recipe=JSON.parse(localStorage.getItem("tasteFinderCurrentRecipe")||"null");
 const content=document.getElementById("content");
-if(!recipe){content.innerHTML='<section><h1>Recipe not found</h1><p>Open a recipe from the home page first.</p><a class="action primary" href="taste-finder.html">Browse recipes</a></section>'}
+if(!recipe){content.innerHTML='<section><h1>Recipe not found</h1><p>Open a recipe from the home page first.</p><a class="action primary" href="index.html">Browse recipes</a></section>'}
 else{
   const image=recipe.image?`<div><img class="photo" src="${recipe.image}" alt="${recipe.title}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="photo fallback" hidden>${recipe.icon}</div></div>`:`<div class="photo fallback">${recipe.icon}</div>`;
   content.innerHTML=`<section class="hero"><div>${image}</div><div><div class="eyebrow">${recipe.tags.join(" · ")}</div><h1>${recipe.title}</h1><p class="description">A ${recipe.difficulty.toLowerCase()} recipe with a practical prep flow and balanced ingredients.</p><div class="facts"><span class="fact">${recipe.time} min</span><span class="fact">${recipe.difficulty}</span><span class="fact">★ ${recipe.rating.toFixed(1)}</span><span class="fact">${recipe.servings} servings</span><span class="fact">${recipe.calories} kcal / serving</span></div><div class="actions"><a class="action primary" href="share.html?id=${recipe.id}">Share recipe</a><a class="action" href="taste-finder.html">Back to recipes</a></div></div></section><section class="section-grid"><div class="section"><h2>Ingredients</h2><div class="ingredients">${recipe.ingredients.map(item=>`<div class="ingredient"><span>${item[0]}</span><strong>${item[1]}</strong></div>`).join("")}</div></div><div class="section"><h2>Step-by-step</h2><div class="steps">${recipe.steps.map((step,index)=>`<div class="step"><span class="number">${index+1}</span><span>${step}</span></div>`).join("")}</div></div></section><div class="notes"><strong>Kitchen note:</strong> ${recipe.notes}</div>`;
