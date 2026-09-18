@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Taste Finder — search and discover recipes by cravings and ingredients.">
+<title>Taste Finder — Recipe Discovery</title>
+<style>
+  :root{
+    --bg:#fffdf9;
+    --surface:#ffffff;
+    --surface-2:#f6f7f8;
+    --text:#202124;
+    --muted:#73777d;
+    --border:#dddfe3;
+    --accent:#f46f3e;
+    --accent-dark:#db5c2d;
+    --accent-soft:#fff0ea;
+    --chip:#ffffff;
+    --shadow:0 12px 35px rgba(33,35,38,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.45;
+  }
+  button,input{font:inherit}
+  button{cursor:pointer}
+  a{color:inherit}
+
+  header{
+    position:sticky;
+    top:0;
+    z-index:30;
+    background:rgba(255,253,249,.92);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav{
+    width:min(1290px,calc(100% - 48px));
+    margin:auto;
+    height:76px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .brand{
+    text-decoration:none;
+    font-weight:900;
+    letter-spacing:2px;
+    font-size:23px;
+  }
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .nav-link{
+    border:0;
+    background:transparent;
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    transition:.2s ease;
+  }
+  .nav-link:hover,.nav-link.active{background:var(--surface-2)}
+  .save-count{
+    display:inline-grid;
+    place-items:center;
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+    margin-left:5px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    font-size:12px;
+    font-weight:800;
+  }
+
+  main{width:min(1290px,calc(100% - 48px));margin:0 auto;padding:38px 0 60px}
+  .hero{padding:4px 0 23px}
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:var(--accent-dark);
+    font-weight:800;
+    font-size:13px;
+    margin-bottom:10px;
+  }
+  .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  h1{font-size:clamp(34px,4vw,54px);line-height:1.05;margin:0 0 12px;letter-spacing:-1.5px}
+  .subtitle{margin:0;color:var(--muted);font-size:17px;max-width:690px}
+
+  .search-row{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px;
+    margin-top:24px;
+  }
+  .search-wrap{position:relative}
+  .search-icon{
+    position:absolute;left:17px;top:50%;transform:translateY(-50%);
+    color:#858a90;pointer-events:none
+  }
+  #searchInput{
+    width:100%;
+    height:58px;
+    padding:0 50px 0 46px;
+    border:1px solid #cfd2d6;
+    border-radius:14px;
+    outline:none;
+    background:var(--surface);
+    color:var(--text);
+    transition:.2s ease;
+  }
+  #searchInput:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(244,111,62,.12)}
+  .clear-search{
+    position:absolute;
+    right:10px;top:50%;transform:translateY(-50%);
+    width:34px;height:34px;border:0;border-radius:50%;
+    background:transparent;color:var(--muted);
+    display:none
+  }
+  .clear-search.show{display:block}
+  .primary{
+    height:58px;padding:0 28px;border:0;border-radius:14px;
+    background:var(--accent);color:white;font-weight:800;
+    transition:.2s ease;box-shadow:0 8px 18px rgba(244,111,62,.22)
+  }
+  .primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+  .primary:active{transform:translateY(0)}
+
+  .filters{
+    margin-top:18px;
+    padding:16px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:18px;
+  }
+  .filter-top{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    margin-bottom:13px
+  }
+  .filter-title{font-weight:800}
+  .clear-filters{
+    border:0;background:transparent;color:var(--accent-dark);font-weight:700;padding:5px 8px
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{
+    border:1px solid var(--border);
+    background:var(--chip);
+    color:#303238;
+    border-radius:999px;
+    padding:9px 15px;
+    transition:.18s ease;
+  }
+  .chip:hover{border-color:#b9bdc2;transform:translateY(-1px)}
+  .chip.selected{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    font-weight:800;
+  }
+  .advanced{
+    border-top:1px solid var(--border);
+    margin-top:14px;
+    padding-top:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 18px;
+    align-items:center;
+  }
+  .ingredient-box{
+    flex:1 1 320px;
+    display:flex;gap:8px
+  }
+  .ingredient-box input{
+    min-width:0;flex:1;height:42px;padding:0 13px;
+    border:1px solid var(--border);border-radius:10px;outline:none;background:white
+  }
+  .ingredient-box input:focus{border-color:var(--accent)}
+  .small-btn{
+    height:42px;padding:0 14px;border:1px solid var(--border);
+    background:white;border-radius:10px;font-weight:700
+  }
+  .small-btn:hover{border-color:#b6bac0}
+  .selected-ingredients{display:flex;flex-wrap:wrap;gap:7px}
+  .ingredient-tag{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:999px;
+    font-size:13px
+  }
+  .ingredient-tag button{
+    border:0;background:transparent;padding:0;color:var(--muted);line-height:1
+  }
+
+  .toolbar{
+    display:flex;align-items:end;justify-content:space-between;gap:16px;
+    margin:40px 0 18px
+  }
+  .section-title{margin:0;font-size:27px;letter-spacing:-.4px}
+  .section-subtitle{margin:3px 0 0;color:var(--muted)}
+  .toolbar-right{display:flex;align-items:center;gap:9px;white-space:nowrap}
+  select{
+    height:42px;border:1px solid var(--border);background:white;border-radius:10px;
+    padding:0 35px 0 12px;color:var(--text)
+  }
+
+  .status{
+    display:flex;align-items:center;justify-content:space-between;gap:15px;
+    padding:12px 14px;margin-bottom:16px;border:1px dashed var(--border);
+    border-radius:12px;background:rgba(255,255,255,.65);color:var(--muted);font-size:14px
+  }
+  .results{min-height:280px}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:24px;
+  }
+  .card{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:14px;
+    overflow:hidden;
+    transition:.22s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#c8cbd0}
+  .image{
+    height:190px;
+    border-radius:13px;
+    overflow:hidden;
+    position:relative;
+    background:#eceff1;
+  }
+  .image img{width:100%;height:100%;object-fit:cover;display:block}
+  .image .fallback{
+    width:100%;height:100%;display:grid;place-items:center;
+    font-size:62px;background:linear-gradient(135deg,#f5f5f5,#e6e8ea)
+  }
+  .badge{
+    position:absolute;left:11px;top:11px;
+    padding:6px 9px;border-radius:999px;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(6px);
+    font-size:12px;font-weight:800
+  }
+  .save-btn{
+    position:absolute;right:10px;top:10px;
+    width:36px;height:36px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+    display:grid;place-items:center;font-size:18px
+  }
+  .save-btn.saved{color:var(--accent-dark)}
+  .card-body{padding:13px 5px 2px}
+  .card-title{margin:0 0 5px;font-size:20px;line-height:1.18}
+  .meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;color:var(--muted);font-size:13px}
+  .dot{color:#b4b7bc}
+  .match{
+    margin-top:10px;display:inline-flex;gap:5px;align-items:center;
+    color:var(--accent-dark);font-weight:800;font-size:12px
+  }
+  .card-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:14px}
+  .view-btn{
+    border:1px solid var(--border);background:white;border-radius:999px;
+    height:38px;padding:0 14px;font-weight:700
+  }
+  .view-btn:hover{border-color:#b7bbc0}
+  .mini-tags{display:flex;gap:6px;overflow:hidden}
+  .mini-tags span{
+    flex:none;padding:6px 8px;border-radius:999px;background:var(--surface-2);
+    color:#5e6268;font-size:11px
+  }
+
+  .empty{
+    text-align:center;padding:66px 20px;border:1px dashed var(--border);
+    border-radius:18px;background:rgba(255,255,255,.55)
+  }
+  .empty .icon{font-size:44px;margin-bottom:8px}
+  .empty h3{margin:0 0 7px}
+  .empty p{margin:0;color:var(--muted)}
+
+  .load-more{
+    display:block;margin:28px auto 0;height:44px;padding:0 20px;
+    border:1px solid var(--border);background:white;border-radius:11px;font-weight:800
+  }
+
+  footer{
+    border-top:1px solid var(--border);
+    padding:25px 0 40px;color:var(--muted);font-size:13px
+  }
+  .footer-inner{width:min(1290px,calc(100% - 48px));margin:auto;display:flex;justify-content:space-between;gap:20px}
+
+  .modal{
+    position:fixed;inset:0;z-index:100;display:none;
+    background:rgba(20,22,25,.54);backdrop-filter:blur(6px);padding:22px;overflow:auto
+  }
+  .modal.open{display:block}
+  .modal-card{
+    width:min(900px,100%);margin:25px auto 60px;background:var(--surface);
+    border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,.22)
+  }
+  .modal-image{height:290px;position:relative;background:#eceff1}
+  .modal-image img{width:100%;height:100%;object-fit:cover}
+  .modal-image .fallback{height:100%;display:grid;place-items:center;font-size:95px;background:linear-gradient(135deg,#f6f6f6,#e3e5e7)}
+  .close{
+    position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.94);font-size:24px
+  }
+  .modal-body{padding:27px}
+  .modal-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+  .modal-body h2{margin:0;font-size:34px;line-height:1.1}
+  .modal-description{color:var(--muted);font-size:16px;margin:10px 0 0;max-width:750px}
+  .facts{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 24px}
+  .fact{background:var(--surface-2);border:1px solid var(--border);padding:8px 11px;border-radius:10px;font-size:13px}
+  .modal-grid{display:grid;grid-template-columns:.86fr 1.4fr;gap:28px}
+  .modal-section h3{margin:0 0 11px;font-size:18px}
+  .ingredients{display:grid;gap:8px}
+  .ingredient-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eef0f1;padding:7px 0}
+  .ingredient-row span:last-child{font-weight:700;color:#51555a}
+  .steps{display:grid;gap:14px}
+  .step{display:grid;grid-template-columns:32px 1fr;gap:11px;align-items:start}
+  .step-num{
+    width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);
+    display:grid;place-items:center;font-weight:900;font-size:13px
+  }
+  .notes{
+    margin-top:24px;padding:15px 16px;border-radius:13px;background:#fff8f4;border:1px solid #ffdacc;color:#5d504a
+  }
+  .modal-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:25px}
+  .action{
+    height:42px;padding:0 15px;border-radius:10px;border:1px solid var(--border);background:white;font-weight:800
+  }
+  .action.primary-action{background:var(--accent);border-color:var(--accent);color:white}
+  .action.primary-action:hover{background:var(--accent-dark)}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;z-index:120;transform:translate(-50%,20px);
+    background:#222;color:#fff;padding:11px 14px;border-radius:10px;font-size:14px;
+    opacity:0;pointer-events:none;transition:.22s ease
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:980px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .modal-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:700px){
+    .nav{height:66px;width:min(100% - 28px,1290px)}
+    .nav-links .nav-link:first-child{display:none}
+    main{width:min(100% - 28px,1290px);padding-top:28px}
+    .search-row{grid-template-columns:1fr}
+    .primary{width:100%}
+    .toolbar{align-items:flex-start;flex-direction:column}
+    .toolbar-right{width:100%;justify-content:space-between}
+    .grid{grid-template-columns:1fr}
+    .image{height:210px}
+    .modal{padding:10px}
+    .modal-card{margin:10px auto 30px}
+    .modal-body{padding:21px}
+    .modal-title-row{flex-direction:column}
+    .modal-body h2{font-size:29px}
+    .modal-image{height:230px}
+    .footer-inner{width:min(100% - 28px,1290px);flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<header>
+  <nav class="nav">
+    <a class="brand" href="#" id="homeLink">TASTE FINDER</a>
+    <div class="nav-links">
+      <button class="nav-link active" id="homeBtn">Home</button>
+      <button class="nav-link" id="savedBtn">Recipes Saved <span class="save-count" id="saveCount">0</span></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> RECIPE DISCOVERY</div>
+    <h1>What are you craving?</h1>
+    <p class="subtitle">Search by craving, ingredient, or recipe name. Mix and match filters to find something you can actually cook right now.</p>
+
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="searchInput" type="search" placeholder="e.g. spicy chicken, chocolate dessert…" autocomplete="off">
+        <button class="clear-search" id="clearSearch" aria-label="Clear search">×</button>
+      </div>
+      <button class="primary" id="searchBtn">Search</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-top">
+        <span class="filter-title">Cravings</span>
+        <button class="clear-filters" id="clearFilters">Clear all</button>
+      </div>
+      <div class="chip-row" id="cravingChips"></div>
+
+      <div class="advanced">
+        <div class="ingredient-box">
+          <input id="ingredientInput" type="text" placeholder="Add ingredients you have (e.g. tomato, eggs)">
+          <button class="small-btn" id="addIngredient">Add</button>
+        </div>
+        <div class="selected-ingredients" id="selectedIngredients"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title" id="resultTitle">Recommended recipes</h2>
+        <p class="section-subtitle" id="resultSubtitle">Sorted according to your selected cravings and available ingredients.</p>
+      </div>
+      <div class="toolbar-right">
+        <span style="color:var(--muted);font-size:14px">Sort</span>
+        <select id="sortSelect" aria-label="Sort recipes">
+          <option value="match">Best match</option>
+          <option value="time">Quickest first</option>
+          <option value="az">A → Z</option>
+          <option value="rating">Highest rated</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="status">
+      <span id="resultCount">0 recipes</span>
+      <span id="filterSummary">Showing your full recipe collection</span>
+    </div>
+
+    <div class="results">
+      <div class="grid" id="recipeGrid"></div>
+      <div class="empty" id="emptyState" style="display:none">
+        <div class="icon">🍳</div>
+        <h3>No recipes matched</h3>
+        <p>Try a broader craving, remove an ingredient, or search for a simpler ingredient.</p>
+      </div>
+      <button class="load-more" id="loadMore" style="display:none">Load more</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>Taste Finder · Front-end recipe discovery demo</span>
+    <span>Recipes are stored locally in your browser when saved.</span>
+  </div>
+</footer>
+
+<div class="modal" id="recipeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <div class="modal-image" id="modalImage"></div>
+    <div class="modal-body">
+      <div class="modal-title-row">
+        <div>
+          <h2 id="modalTitle"></h2>
+          <p class="modal-description" id="modalDescription"></p>
+        </div>
+        <button class="close" id="closeModal" aria-label="Close">×</button>
+      </div>
+      <div class="facts" id="modalFacts"></div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <h3>Ingredients</h3>
+          <div class="ingredients" id="modalIngredients"></div>
+        </div>
+        <div class="modal-section">
+          <h3>Step-by-step</h3>
+          <div class="steps" id="modalSteps"></div>
+        </div>
+      </div>
+
+      <div class="notes" id="modalNotes"></div>
+      <div class="modal-actions">
+        <button class="action primary-action" id="modalSave">Save recipe</button>
+        <button class="action" id="modalShare">Share</button>
+        <a class="action" href="taste-finder.html" id="modalHome">Go to home</a>
+        <button class="action" id="modalCloseBottom">Back to recipes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const recipes = [
+  {
+    id:1, title:"Spicy Garlic Chicken", time:30, difficulty:"Easy", rating:4.8,
+    servings:3, calories:465, tags:["Spicy","Savory","Quick"], icon:"🍗",
+    image:"https://images.unsplash.com/photo-1604908177522-4322e8e9b8f2?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[
+      ["boneless chicken","500 g"],["garlic","6 cloves"],["chilli flakes","1 tsp"],
+      ["soy sauce","2 tbsp"],["honey","1 tbsp"],["oil","1 tbsp"]
+    ],
+    steps:["Pat the chicken dry and season lightly with salt and pepper.","Heat oil in a wide pan over medium-high heat. Sear chicken until browned and cooked through.","Lower the heat. Add garlic and chilli flakes; stir for 30–45 seconds without burning the garlic.","Add soy sauce and honey. Toss until the chicken is glossy and coated.","Rest for 3 minutes, then slice and serve with rice or flatbread."],
+    notes:"For extra heat, add a sliced green chilli. Keep the pan hot enough to brown the chicken, but reduce heat before adding garlic."
+  },
+  {
+    id:2, title:"Creamy Tomato Pasta", time:25, difficulty:"Easy", rating:4.7,
+    servings:2, calories:535, tags:["Creamy","Savory","Quick"], icon:"🍝",
+    image:"https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[
+      ["penne or rigatoni","220 g"],["tomatoes","3 medium"],["garlic","3 cloves"],
+      ["cream","100 ml"],["parmesan","35 g"],["olive oil","1 tbsp"]
+    ],
+    steps:["Boil pasta in well-salted water until just al dente. Reserve 120 ml pasta water.","Blend or crush the tomatoes. Sauté garlic in olive oil for 1 minute.","Add tomatoes and simmer for 7–8 minutes until slightly reduced.","Stir in cream and half the parmesan. Loosen with a splash of pasta water.","Toss in the pasta and cook for 1 more minute. Finish with remaining parmesan."],
+    notes:"The reserved pasta water is the texture control: add it gradually until the sauce clings to the pasta."
+  },
+  {
+    id:3, title:"Chocolate Lava Cake", time:35, difficulty:"Easy", rating:4.9,
+    servings:4, calories:445, tags:["Sweet","Creamy"], icon:"🍫",
+    image:"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[
+      ["dark chocolate","120 g"],["butter","90 g"],["eggs","2"],["sugar","55 g"],
+      ["all-purpose flour","35 g"],["vanilla","1 tsp"]
+    ],
+    steps:["Heat oven to 200°C. Butter four small ramekins and dust lightly with flour.","Melt chocolate and butter together until smooth; cool for 2 minutes.","Whisk eggs, sugar and vanilla until slightly thickened.","Fold in melted chocolate, then gently fold in flour until just combined.","Divide into ramekins and bake 10–12 minutes. The edges should be set while the centres remain soft.","Rest for 1 minute, invert onto plates and serve immediately."],
+    notes:"Ovens vary. The first test cake is the easiest way to lock in the right bake time for a molten centre."
+  },
+  {
+    id:4, title:"Masala Egg Fried Rice", time:20, difficulty:"Easy", rating:4.6,
+    servings:2, calories:510, tags:["Savory","Spicy","Quick"], icon:"🍚",
+    image:"https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["cooked cold rice","3 cups"],["eggs","3"],["onion","1"],["carrot","1"],["green chilli","1"],["soy sauce","1 tbsp"],["curry powder","1 tsp"]],
+    steps:["Whisk the eggs with a pinch of salt. Heat a wok or large pan until hot.","Add a little oil, scramble eggs quickly, then move them to one side.","Add onion, carrot and chilli. Stir-fry for 2–3 minutes.","Add curry powder and cold rice. Toss hard so the grains separate.","Add soy sauce and return the eggs. Cook until hot and lightly smoky."],
+    notes:"Cold rice fries better because its surface moisture is lower, so the grains stay separate."
+  },
+  {
+    id:5, title:"Crispy Potato Tacos", time:30, difficulty:"Easy", rating:4.7,
+    servings:3, calories:420, tags:["Crunchy","Spicy","Savory"], icon:"🌮",
+    image:"https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["potatoes","450 g"],["tortillas","6"],["cheddar","90 g"],["onion","1/2"],["smoked paprika","1 tsp"],["cumin","1/2 tsp"],["lime","1"]],
+    steps:["Boil potatoes until just tender, drain and let steam dry.","Crush roughly and season with paprika, cumin, salt and pepper.","Brown onion in a pan, add potatoes and cook until crisp at the edges.","Warm tortillas and fill with potato mixture and cheddar.","Fold and toast in a dry pan until crisp on both sides. Finish with lime."],
+    notes:"Do not mash the potatoes completely; rough pieces create more browned edges."
+  },
+  {
+    id:6, title:"Honey Garlic Salmon", time:25, difficulty:"Easy", rating:4.8,
+    servings:2, calories:520, tags:["Sweet","Savory","Healthy","Quick"], icon:"🐟",
+    image:"https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["salmon fillets","2"],["garlic","4 cloves"],["honey","1.5 tbsp"],["soy sauce","1 tbsp"],["lemon","1/2"],["sesame seeds","1 tsp"]],
+    steps:["Pat salmon dry and season with salt and pepper.","Whisk honey, soy sauce, garlic and lemon juice.","Sear salmon skin-side down for 4–5 minutes, then flip.","Pour in sauce and spoon it over the fish while it bubbles for 2–3 minutes.","Sprinkle with sesame seeds and serve with rice and vegetables."],
+    notes:"Watch the sauce closely: honey caramelises quickly. Reduce heat as soon as it starts thickening."
+  },
+  {
+    id:7, title:"Creamy Garlic Mushroom Rice", time:30, difficulty:"Easy", rating:4.6,
+    servings:3, calories:485, tags:["Creamy","Savory"], icon:"🍄",
+    image:"https://images.unsplash.com/photo-1516685018646-549198525c1b?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["basmati rice","1.5 cups"],["mushrooms","250 g"],["garlic","5 cloves"],["cream","120 ml"],["onion","1"],["parmesan","30 g"]],
+    steps:["Rinse rice. Sauté onion and half the garlic until soft.","Add rice and 2.5 cups water. Cover and cook until tender.","Meanwhile, brown mushrooms in a wide pan over high heat.","Add remaining garlic, cream and parmesan; simmer for 2–3 minutes.","Fold rice into the mushrooms and adjust seasoning."],
+    notes:"High heat helps mushrooms brown instead of steaming."
+  },
+  {
+    id:8, title:"Paneer Tikka Wrap", time:25, difficulty:"Easy", rating:4.7,
+    servings:2, calories:500, tags:["Spicy","Savory","Quick"], icon:"🌯",
+    image:"https://images.unsplash.com/photo-1628294895950-9805252327bc?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["paneer","250 g"],["yogurt","100 g"],["capsicum","1"],["onion","1"],["garam masala","1 tsp"],["lemon","1/2"],["roti/tortilla","4"]],
+    steps:["Mix yogurt, garam masala, chilli powder, lemon and salt.","Coat paneer and vegetables. Rest for at least 10 minutes.","Cook on a hot pan until browned at the edges.","Warm rotis. Add paneer, vegetables and any chutney you like.","Roll tightly and toast seam-side down for 30 seconds."],
+    notes:"Do not overcrowd the pan or the paneer will release moisture instead of browning."
+  },
+  {
+    id:9, title:"Lemon Pepper Chicken", time:25, difficulty:"Easy", rating:4.6,
+    servings:2, calories:390, tags:["Savory","Sour","Quick"], icon:"🍋",
+    image:"https://images.unsplash.com/photo-1501200291289-c5a76c7c2b4f?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chicken breast","400 g"],["lemon","1"],["black pepper","2 tsp"],["garlic","3 cloves"],["butter","1 tbsp"],["flour","1 tbsp"]],
+    steps:["Slice chicken into thin cutlets and coat lightly with flour, salt and pepper.","Sear in butter until golden and cooked through; set aside.","Add garlic to the same pan for 30 seconds.","Add lemon juice and 60 ml water. Scrape up the browned bits.","Return chicken and simmer for 2 minutes. Finish with extra black pepper."],
+    notes:"Freshly cracked pepper has a stronger aroma than pre-ground pepper."
+  },
+  {
+    id:10, title:"Peanut Chilli Noodles", time:15, difficulty:"Easy", rating:4.7,
+    servings:2, calories:465, tags:["Spicy","Creamy","Quick"], icon:"🍜",
+    image:"https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["noodles","220 g"],["peanut butter","2 tbsp"],["soy sauce","1.5 tbsp"],["chilli oil","1 tbsp"],["garlic","2 cloves"],["lime","1/2"]],
+    steps:["Cook noodles according to the packet. Reserve 100 ml cooking water.","Mix peanut butter, soy sauce, chilli oil, garlic and lime.","Add warm noodles and a splash of cooking water to loosen the sauce.","Toss until glossy and creamy. Add more water a spoonful at a time if needed.","Top with sesame seeds or spring onion."],
+    notes:"The sauce should be loose before serving; noodles continue absorbing it as they sit."
+  },
+  {
+    id:11, title:"Banana Oat Pancakes", time:18, difficulty:"Easy", rating:4.5,
+    servings:2, calories:360, tags:["Sweet","Healthy","Quick"], icon:"🥞",
+    image:"https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["ripe banana","1"],["rolled oats","1 cup"],["eggs","2"],["milk","100 ml"],["cinnamon","1/2 tsp"],["honey","1 tsp"]],
+    steps:["Blend banana, oats, eggs, milk and cinnamon until mostly smooth.","Rest batter for 3 minutes so the oats hydrate.","Heat a lightly greased pan over medium heat.","Cook small pancakes for 2 minutes per side.","Serve with sliced banana and a little honey."],
+    notes:"Keep the pancakes modest in size; large ones are harder to flip before the middle sets."
+  },
+  {
+    id:12, title:"Roasted Tomato Soup", time:45, difficulty:"Easy", rating:4.8,
+    servings:4, calories:230, tags:["Healthy","Sour","Creamy"], icon:"🍅",
+    image:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["tomatoes","700 g"],["onion","1"],["garlic","5 cloves"],["olive oil","2 tbsp"],["vegetable stock","500 ml"],["cream","60 ml"]],
+    steps:["Heat oven to 220°C. Place tomatoes, onion and garlic on a tray with olive oil.","Roast for 25–30 minutes until the edges are deeply browned.","Transfer to a pot and add stock. Simmer for 8 minutes.","Blend until smooth. Stir in cream and season to taste.","Serve hot with toast."],
+    notes:"The deep roast is where most of the flavour develops, so do not stop when the tomatoes merely soften."
+  },
+  {
+    id:13, title:"Classic Chickpea Curry", time:40, difficulty:"Easy", rating:4.8,
+    servings:4, calories:410, tags:["Spicy","Healthy","Savory"], icon:"🥘",
+    image:"https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chickpeas","2 cans"],["onion","1"],["tomatoes","3"],["garlic","4 cloves"],["ginger","1 tbsp"],["garam masala","1.5 tsp"],["cumin","1 tsp"]],
+    steps:["Sauté onion in oil until golden. Add ginger and garlic.","Add cumin and garam masala; cook for 30 seconds.","Add tomatoes and cook until thick and jammy.","Add chickpeas and 250 ml water. Simmer uncovered for 15 minutes.","Mash a few chickpeas into the sauce, then season and serve with rice or roti."],
+    notes:"Mashing a small portion of the chickpeas naturally thickens the curry without needing extra cream."
+  },
+  {
+    id:14, title:"Crispy Chicken Burger", time:35, difficulty:"Medium", rating:4.8,
+    servings:2, calories:670, tags:["Crunchy","Savory"], icon:"🍔",
+    image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chicken thighs","2"],["buttermilk","150 ml"],["flour","100 g"],["paprika","1 tsp"],["burger buns","2"],["lettuce","1 cup"],["mayonnaise","3 tbsp"]],
+    steps:["Marinate chicken in buttermilk, salt and paprika for 20 minutes.","Mix flour with paprika, pepper and salt. Coat chicken thoroughly.","Shallow-fry over medium heat until crisp and cooked through, about 5–6 minutes per side.","Toast buns and mix mayonnaise with a little chilli sauce if desired.","Assemble with lettuce, chicken and sauce."],
+    notes:"Chicken thighs stay juicier than breast for this style of burger."
+  },
+  {
+    id:15, title:"Mango Yogurt Parfait", time:10, difficulty:"Easy", rating:4.5,
+    servings:2, calories:285, tags:["Sweet","Healthy","Quick","Creamy"], icon:"🥭",
+    image:"https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["ripe mango","1"],["Greek yogurt","300 g"],["granola","1/2 cup"],["honey","1 tbsp"],["cardamom","1 pinch"]],
+    steps:["Dice the mango or blend half into a smooth puree.","Stir honey and cardamom into the yogurt.","Layer yogurt, mango and granola in two glasses.","Repeat once more and serve immediately."],
+    notes:"Add granola just before serving to keep it crunchy."
+  },
+  {
+    id:16, title:"Vegetable Hakka Noodles", time:20, difficulty:"Easy", rating:4.6,
+    servings:3, calories:445, tags:["Savory","Crunchy","Quick"], icon:"🥢",
+    image:"https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["hakka noodles","250 g"],["cabbage","1 cup"],["carrot","1"],["capsicum","1"],["spring onion","3"],["soy sauce","1.5 tbsp"],["vinegar","1 tsp"]],
+    steps:["Boil noodles until just tender, drain and toss with a little oil.","Heat a wok until very hot. Stir-fry carrot, cabbage and capsicum for 2 minutes.","Add noodles, soy sauce and vinegar. Toss vigorously.","Add spring onion and cook for another minute.","Taste and adjust soy, vinegar and pepper."],
+    notes:"High heat plus a crowded pan is the enemy. Use a large wok so the vegetables stay crisp."
+  },
+  {
+    id:17, title:"Spinach Cheese Omelette", time:12, difficulty:"Easy", rating:4.5,
+    servings:1, calories:330, tags:["Healthy","Savory","Quick","Creamy"], icon:"🍳",
+    image:"https://images.unsplash.com/photo-1510693206972-df098f76e0a4?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["eggs","3"],["spinach","1 cup"],["cheddar","40 g"],["onion","1/4"],["butter","1 tsp"],["black pepper","1/2 tsp"]],
+    steps:["Wilt spinach and onion in butter for 1–2 minutes.","Whisk eggs with salt and pepper.","Pour eggs into the pan over medium-low heat and let the edges set.","Add spinach and cheese to one half. Fold the omelette.","Cook for 30–60 seconds until the cheese melts."],
+    notes:"Lower heat gives a softer omelette and more control than a high flame."
+  },
+  {
+    id:18, title:"Garlic Butter Corn", time:10, difficulty:"Easy", rating:4.4,
+    servings:2, calories:190, tags:["Savory","Quick"], icon:"🌽",
+    image:"https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["sweet corn","2 cups"],["butter","1 tbsp"],["garlic","2 cloves"],["lime","1/2"],["chilli flakes","1/2 tsp"],["coriander","2 tbsp"]],
+    steps:["Melt butter in a pan and add garlic.","Add corn and chilli flakes. Cook until hot with a few browned spots.","Turn off the heat and add lime juice.","Fold in coriander, taste and adjust salt."],
+    notes:"A little browning gives corn a much more roasted flavour."
+  },
+  {
+    id:19, title:"Lemon Herb Couscous", time:15, difficulty:"Easy", rating:4.4,
+    servings:3, calories:305, tags:["Healthy","Sour","Quick"], icon:"🥗",
+    image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["couscous","1.5 cups"],["vegetable stock","1.5 cups"],["lemon","1"],["cucumber","1"],["tomato","1"],["parsley","1/2 cup"],["olive oil","1 tbsp"]],
+    steps:["Bring stock to a boil and pour over couscous. Cover for 5 minutes.","Fluff with a fork and cool for a few minutes.","Add diced cucumber, tomato and parsley.","Dress with lemon juice, olive oil, salt and pepper.","Toss and serve warm or chilled."],
+    notes:"Fluff couscous with a fork rather than stirring it into a paste."
+  },
+  {
+    id:20, title:"Creamy Coconut Lentil Dal", time:40, difficulty:"Easy", rating:4.9,
+    servings:4, calories:420, tags:["Creamy","Spicy","Healthy"], icon:"🍛",
+    image:"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["red lentils","1.5 cups"],["coconut milk","200 ml"],["tomatoes","2"],["onion","1"],["garlic","4 cloves"],["turmeric","1/2 tsp"],["cumin","1 tsp"]],
+    steps:["Rinse lentils. Sauté onion until soft, then add garlic and cumin.","Add turmeric, tomatoes, lentils and 4 cups water.","Simmer 20–25 minutes until the lentils break down.","Stir in coconut milk and simmer for 5 minutes.","Season with salt and chilli. Serve with rice."],
+    notes:"The dal thickens substantially as it cools, so leave it slightly looser than the final texture you want."
+  },
+  {
+    id:21, title:"Margherita Flatbread", time:22, difficulty:"Easy", rating:4.6,
+    servings:2, calories:430, tags:["Savory","Quick","Creamy"], icon:"🍕",
+    image:"https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["flatbread","2"],["tomato sauce","1/2 cup"],["mozzarella","150 g"],["tomato","1"],["basil","handful"],["olive oil","1 tbsp"]],
+    steps:["Heat oven to 230°C with a tray inside.","Spread tomato sauce over flatbreads, leaving a small border.","Add torn mozzarella and tomato slices.","Bake 8–10 minutes until the edges crisp and cheese bubbles.","Finish with basil and olive oil."],
+    notes:"A preheated tray gives the flatbread a stronger bottom crust."
+  },
+  {
+    id:22, title:"Chilli Garlic Potato Wedges", time:35, difficulty:"Easy", rating:4.7,
+    servings:3, calories:320, tags:["Crunchy","Spicy","Savory"], icon:"🥔",
+    image:"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["potatoes","600 g"],["garlic","4 cloves"],["olive oil","2 tbsp"],["paprika","1 tsp"],["chilli flakes","1 tsp"],["cornstarch","1 tbsp"]],
+    steps:["Heat oven to 220°C. Cut potatoes into wedges and pat dry.","Toss with cornstarch, oil, paprika, chilli and salt.","Spread in a single layer with space between wedges.","Roast 30–35 minutes, turning once.","Toss with grated garlic for the last 3 minutes, then serve."],
+    notes:"Dry potatoes and plenty of pan space are the biggest contributors to crispness."
+  },
+  {
+    id:23, title:"Berry Chia Pudding", time:10, difficulty:"Easy", rating:4.4,
+    servings:2, calories:240, tags:["Sweet","Healthy","Quick"], icon:"🫐",
+    image:"https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chia seeds","5 tbsp"],["milk","300 ml"],["mixed berries","1 cup"],["honey","1 tbsp"],["vanilla","1/2 tsp"]],
+    steps:["Mix chia seeds, milk, vanilla and honey.","Wait 10 minutes and stir again to break up clumps.","Cover and chill for at least 3 hours.","Top with berries before serving."],
+    notes:"Stir once after the first 10 minutes; this is the easiest way to prevent a dense seed layer at the bottom."
+  },
+  {
+    id:24, title:"Thai-Style Basil Chicken", time:22, difficulty:"Easy", rating:4.8,
+    servings:3, calories:455, tags:["Spicy","Savory","Quick"], icon:"🌿",
+    image:"https://images.unsplash.com/photo-1604909052743-94e838986d24?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chicken mince","450 g"],["garlic","5 cloves"],["green chilli","2"],["basil","1 cup"],["soy sauce","1 tbsp"],["oyster sauce","1 tbsp"],["sugar","1 tsp"]],
+    steps:["Heat a wok until very hot. Add oil, garlic and chilli for 20 seconds.","Add chicken mince and stir-fry until browned and cooked through.","Add soy sauce, oyster sauce and sugar. Toss until glossy.","Turn off the heat and fold in basil until just wilted.","Serve over hot rice, optionally with a fried egg."],
+    notes:"Add basil at the end. Cooking it too long removes much of its fresh aroma."
+  },
+  {
+    id:25, title:"Apple Cinnamon Crumble", time:45, difficulty:"Easy", rating:4.7,
+    servings:6, calories:395, tags:["Sweet","Crunchy"], icon:"🍎",
+    image:"https://images.unsplash.com/photo-1562007908-17c67e878c88?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["apples","5"],["oats","3/4 cup"],["flour","1/2 cup"],["butter","70 g"],["brown sugar","1/3 cup"],["cinnamon","1 tsp"]],
+    steps:["Heat oven to 180°C. Slice apples and toss with half the cinnamon and a little sugar.","Mix oats, flour, butter, brown sugar and remaining cinnamon until crumbly.","Put apples in a baking dish and cover evenly with crumble.","Bake 30–35 minutes until the fruit bubbles and the top is golden.","Cool 10 minutes before serving."],
+    notes:"Let the crumble rest briefly after baking so the fruit thickens and the topping stays crisp."
+  },
+  {
+    id:26, title:"Pepper Garlic Paneer Bowl", time:22, difficulty:"Easy", rating:4.6,
+    servings:2, calories:515, tags:["Spicy","Savory","Quick"], icon:"🧀",
+    image:"https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["paneer","250 g"],["bell pepper","1"],["onion","1"],["garlic","5 cloves"],["black pepper","1.5 tsp"],["soy sauce","1 tbsp"],["rice","2 cups cooked"]],
+    steps:["Pat paneer dry and sear cubes in a hot pan until golden. Remove.","Stir-fry onion and pepper for 2 minutes.","Add garlic and black pepper; cook for 30 seconds.","Return paneer and add soy sauce. Toss for 1–2 minutes.","Serve over hot rice."],
+    notes:"Freshly ground black pepper added in two stages gives both heat and aroma."
+  },
+  {
+    id:27, title:"Classic French Toast", time:15, difficulty:"Easy", rating:4.6,
+    servings:2, calories:410, tags:["Sweet","Creamy","Quick"], icon:"🍞",
+    image:"https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["bread","4 slices"],["eggs","2"],["milk","100 ml"],["sugar","1 tbsp"],["cinnamon","1/2 tsp"],["butter","1 tbsp"]],
+    steps:["Whisk eggs, milk, sugar and cinnamon.","Dip bread briefly on both sides; do not soak it through.","Cook in butter over medium heat until golden, 2–3 minutes per side.","Serve with fruit, honey or powdered sugar."],
+    notes:"Slightly stale bread is ideal because it absorbs the custard without collapsing."
+  },
+  {
+    id:28, title:"One-Pan Tomato Basil Chicken", time:35, difficulty:"Easy", rating:4.7,
+    servings:3, calories:470, tags:["Savory","Healthy"], icon:"🍅",
+    image:"https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["chicken thighs","500 g"],["tomatoes","300 g"],["garlic","4 cloves"],["basil","1 cup"],["olive oil","1 tbsp"],["mozzarella","100 g"]],
+    steps:["Season chicken and sear skin-side down until well browned.","Flip and add garlic and tomatoes around the chicken.","Cover and simmer 12–15 minutes until chicken is cooked.","Top with mozzarella and basil. Cover for 2 minutes to melt.","Rest for 5 minutes before serving."],
+    notes:"Use the rendered chicken fat to sauté the tomatoes for more flavour."
+  },
+  {
+    id:29, title:"Cucumber Mint Raita", time:8, difficulty:"Easy", rating:4.4,
+    servings:4, calories:95, tags:["Healthy","Sour","Quick","Creamy"], icon:"🥒",
+    image:"https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["Greek yogurt","300 g"],["cucumber","1"],["mint","2 tbsp"],["cumin","1/2 tsp"],["lemon","1/2"],["salt","to taste"]],
+    steps:["Grate cucumber and squeeze out excess water.","Whisk yogurt until smooth.","Stir in cucumber, mint, cumin and lemon.","Season and chill for 10 minutes if possible."],
+    notes:"Removing excess cucumber water keeps the raita thick instead of watery."
+  },
+  {
+    id:30, title:"Mushroom Pepper Pasta", time:20, difficulty:"Easy", rating:4.6,
+    servings:2, calories:520, tags:["Creamy","Savory","Quick"], icon:"🍝",
+    image:"https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["spaghetti","220 g"],["mushrooms","250 g"],["garlic","4 cloves"],["cream","100 ml"],["parmesan","35 g"],["black pepper","1.5 tsp"]],
+    steps:["Cook spaghetti and reserve 120 ml pasta water.","Brown mushrooms in a hot pan until deeply coloured.","Add garlic and black pepper for 30 seconds.","Add cream, parmesan and a splash of pasta water.","Toss in spaghetti until glossy and serve immediately."],
+    notes:"Black pepper is the main flavour here, so freshly cracked pepper is worth using."
+  },
+  {
+    id:31, title:"Quick Vegetable Poha", time:18, difficulty:"Easy", rating:4.5,
+    servings:3, calories:310, tags:["Healthy","Savory","Quick"], icon:"🥣",
+    image:"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["poha","2 cups"],["onion","1"],["peas","1/2 cup"],["peanuts","1/3 cup"],["mustard seeds","1 tsp"],["turmeric","1/2 tsp"],["lemon","1/2"]],
+    steps:["Rinse poha quickly, drain and rest for 5 minutes.","Heat oil and crackle mustard seeds. Add peanuts and toast.","Add onion and peas; cook until tender.","Add turmeric and poha. Toss gently over low-medium heat.","Finish with lemon juice and coriander."],
+    notes:"Do not over-rinse poha or it can become mushy."
+  },
+  {
+    id:32, title:"Chocolate Peanut Energy Bites", time:12, difficulty:"Easy", rating:4.5,
+    servings:8, calories:165, tags:["Sweet","Healthy","Quick"], icon:"🍪",
+    image:"https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["rolled oats","1 cup"],["peanut butter","1/2 cup"],["cocoa powder","2 tbsp"],["honey","2 tbsp"],["milk","2 tbsp"],["salt","1 pinch"]],
+    steps:["Mix oats, cocoa and salt.","Stir in peanut butter and honey.","Add milk a little at a time until the mixture holds together.","Roll into small balls and chill for 20 minutes."],
+    notes:"The exact milk amount depends on peanut butter thickness; add it gradually."
+  },
+  {
+    id:33, title:"Tandoori Cauliflower Bites", time:35, difficulty:"Easy", rating:4.7,
+    servings:3, calories:260, tags:["Spicy","Crunchy","Healthy"], icon:"🥦",
+    image:"https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["cauliflower","1 head"],["yogurt","120 g"],["ginger-garlic paste","1 tbsp"],["tandoori masala","1.5 tsp"],["lemon","1/2"],["cornstarch","2 tbsp"]],
+    steps:["Heat oven to 220°C. Cut cauliflower into bite-size florets.","Mix yogurt, ginger-garlic, tandoori masala, lemon and cornstarch.","Coat cauliflower well and place on a lined tray with space between pieces.","Roast 25–30 minutes until browned at the edges.","Serve with mint yogurt or lemon."],
+    notes:"Cornstarch creates a thinner, crisper crust than flour-heavy batter."
+  },
+  {
+    id:34, title:"Creamy Corn Pasta", time:25, difficulty:"Easy", rating:4.6,
+    servings:2, calories:555, tags:["Creamy","Sweet","Quick"], icon:"🌽",
+    image:"https://images.unsplash.com/photo-1598866594230-a7c12756260f?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["pasta","220 g"],["sweet corn","1.5 cups"],["garlic","3 cloves"],["cream","100 ml"],["parmesan","35 g"],["chilli flakes","1/2 tsp"]],
+    steps:["Cook pasta and reserve 120 ml water.","Blend one cup of corn with cream and a pinch of salt.","Sauté garlic in oil, then add the corn puree and chilli flakes.","Add pasta and enough pasta water to make a smooth sauce.","Fold in remaining corn and parmesan before serving."],
+    notes:"Using some whole corn alongside blended corn gives both creaminess and texture."
+  },
+  {
+    id:35, title:"Aloo Masala Toast", time:20, difficulty:"Easy", rating:4.5,
+    servings:2, calories:360, tags:["Spicy","Crunchy","Quick"], icon:"🥪",
+    image:"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["potatoes","2"],["bread","4 slices"],["onion","1/2"],["green chilli","1"],["coriander","2 tbsp"],["chaat masala","1 tsp"],["butter","1 tbsp"]],
+    steps:["Boil potatoes until tender, peel and mash roughly.","Mix with onion, chilli, coriander, chaat masala and salt.","Spread mixture between bread slices.","Butter the outside and toast in a pan until crisp and golden."],
+    notes:"A rough mash gives more contrast than a completely smooth filling."
+  },
+  {
+    id:36, title:"Classic Chocolate Chip Cookies", time:28, difficulty:"Easy", rating:4.8,
+    servings:12, calories:210, tags:["Sweet","Crunchy"], icon:"🍪",
+    image:"https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1200&q=80",
+    ingredients:[["all-purpose flour","1.5 cups"],["butter","115 g"],["brown sugar","1/2 cup"],["white sugar","1/3 cup"],["egg","1"],["chocolate chips","1 cup"],["vanilla","1 tsp"]],
+    steps:["Heat oven to 180°C. Cream softened butter and sugars until smooth.","Beat in egg and vanilla.","Fold in flour and a pinch of salt, then stir in chocolate chips.","Scoop onto a lined tray with space between cookies.","Bake 10–12 minutes until the edges are golden but centres look slightly soft. Cool before moving."],
+    notes:"Do not overbake. The cookies continue setting on the tray after they leave the oven."
+  }
+];
+
+const cravings = ["Sweet","Spicy","Savory","Sour","Crunchy","Creamy","Healthy","Quick"];
+let selectedCravings = new Set();
+let selectedIngredients = [];
+let saved = new Set(JSON.parse(localStorage.getItem("tasteFinderSaved") || "[]"));
+let visibleCount = 12;
+let currentRecipeId = null;
+
+const els = {
+  grid: document.getElementById("recipeGrid"),
+  empty: document.getElementById("emptyState"),
+  loadMore: document.getElementById("loadMore"),
+  resultCount: document.getElementById("resultCount"),
+  filterSummary: document.getElementById("filterSummary"),
+  searchInput: document.getElementById("searchInput"),
+  clearSearch: document.getElementById("clearSearch"),
+  ingredientInput: document.getElementById("ingredientInput"),
+  selectedIngredients: document.getElementById("selectedIngredients"),
+  sortSelect: document.getElementById("sortSelect"),
+  modal: document.getElementById("recipeModal"),
+  modalImage: document.getElementById("modalImage"),
+  modalTitle: document.getElementById("modalTitle"),
+  modalDescription: document.getElementById("modalDescription"),
+  modalFacts: document.getElementById("modalFacts"),
+  modalIngredients: document.getElementById("modalIngredients"),
+  modalSteps: document.getElementById("modalSteps"),
+  modalNotes: document.getElementById("modalNotes"),
+  closeModal: document.getElementById("closeModal"),
+  modalSave: document.getElementById("modalSave"),
+  modalShare: document.getElementById("modalShare"),
+  toast: document.getElementById("toast"),
+  saveCount: document.getElementById("saveCount"),
+  resultTitle: document.getElementById("resultTitle"),
+  resultSubtitle: document.getElementById("resultSubtitle")
+};
+
+function normalize(s){return String(s).toLowerCase().trim();}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function matchesText(recipe, query){
+  if(!query) return true;
+  const haystack = [
+    recipe.title, recipe.tags.join(" "), recipe.ingredients.map(x=>x[0]).join(" ")
+  ].join(" ").toLowerCase();
+  return haystack.includes(normalize(query));
+}
+function ingredientScore(recipe){
+  if(!selectedIngredients.length) return 0;
+  return selectedIngredients.reduce((score, wanted) => {
+    const hit = recipe.ingredients.some(([name]) => {
+      const n = normalize(name);
+      return n.includes(normalize(wanted)) || normalize(wanted).includes(n);
+    });
+    return score + (hit ? 1 : 0);
+  },0);
+}
+function cravingScore(recipe){
+  if(!selectedCravings.size) return 0;
+  return [...selectedCravings].reduce((score, craving) => score + (recipe.tags.includes(craving) ? 1 : 0),0);
+}
+function totalScore(recipe){
+  return cravingScore(recipe)*4 + ingredientScore(recipe)*3 + recipe.rating*.15;
+}
+
+function getFiltered(){
+  const query = els.searchInput.value.trim();
+  const list = recipes.filter(r => {
+    const cravingOK = !selectedCravings.size || [...selectedCravings].every(c => r.tags.includes(c));
+    const ingredientOK = !selectedIngredients.length || ingredientScore(r) > 0;
+    return cravingOK && ingredientOK && matchesText(r, query);
+  });
+  const sort = els.sortSelect.value;
+  list.sort((a,b) => {
+    if(sort === "time") return a.time-b.time || b.rating-a.rating;
+    if(sort === "az") return a.title.localeCompare(b.title);
+    if(sort === "rating") return b.rating-a.rating || a.time-b.time;
+    return totalScore(b)-totalScore(a);
+  });
+  return list;
+}
+
+function recipeImage(recipe, size="card"){
+  return `
+    <img src="${escapeHtml(recipe.image)}" alt="${escapeHtml(recipe.title)}" loading="${size==="card"?"lazy":"eager"}"
+      onerror="this.outerHTML='<div class=&quot;fallback&quot; aria-label=&quot;Food image unavailable&quot;>${recipe.icon}</div>'">
+  `;
+}
+
+function cardHTML(recipe){
+  const isSaved = saved.has(recipe.id);
+  const iScore = ingredientScore(recipe);
+  const cScore = cravingScore(recipe);
+  let match = [];
+  if(cScore) match.push(`${cScore} craving${cScore>1?"s":""}`);
+  if(iScore) match.push(`${iScore} ingredient${iScore>1?"s":""}`);
+  return `
+    <article class="card">
+      <div class="image">
+        ${recipeImage(recipe)}
+        <span class="badge">${escapeHtml(recipe.tags[0])}</span>
+        <button class="save-btn ${isSaved?"saved":""}" data-save="${recipe.id}" aria-label="${isSaved?"Unsave":"Save"} ${escapeHtml(recipe.title)}">${isSaved?"♥":"♡"}</button>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">${escapeHtml(recipe.title)}</h3>
+        <div class="meta">
+          <span>${recipe.time} min</span><span class="dot">•</span>
+          <span>${escapeHtml(recipe.difficulty)}</span><span class="dot">•</span>
+          <span>★ ${recipe.rating.toFixed(1)}</span>
+        </div>
+        ${match.length ? `<div class="match">✓ ${match.join(" · ")}</div>` : ""}
+        <div class="card-actions">
+          <div class="mini-tags">${recipe.tags.slice(0,2).map(t=>`<span>${escapeHtml(t)}</span>`).join("")}</div>
+          <button class="view-btn" data-open="${recipe.id}">View recipe</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderCravings(){
+  document.getElementById("cravingChips").innerHTML = cravings.map(c =>
+    `<button class="chip ${selectedCravings.has(c)?"selected":""}" data-craving="${c}">${c}</button>`
+  ).join("");
+}
+
+function renderIngredients(){
+  els.selectedIngredients.innerHTML = selectedIngredients.map((x,i) =>
+    `<span class="ingredient-tag">${escapeHtml(x)} <button data-remove-ingredient="${i}" aria-label="Remove ${escapeHtml(x)}">×</button></span>`
+  ).join("");
+}
+
+function render(){
+  const filtered = getFiltered();
+  const visible = filtered.slice(0, visibleCount);
+  els.grid.innerHTML = visible.map(cardHTML).join("");
+  els.empty.style.display = filtered.length ? "none" : "block";
+  els.loadMore.style.display = filtered.length > visibleCount ? "block" : "none";
+  els.resultCount.textContent = `${filtered.length} recipe${filtered.length===1?"":"s"}`;
+
+  const q = els.searchInput.value.trim();
+  const parts = [];
+  if(selectedCravings.size) parts.push([...selectedCravings].join(", "));
+  if(selectedIngredients.length) parts.push(`using ${selectedIngredients.join(", ")}`);
+  if(q) parts.push(`matching “${q}”`);
+  els.filterSummary.textContent = parts.length ? parts.join(" · ") : "Showing your full recipe collection";
+  els.resultTitle.textContent = selectedCravings.size || selectedIngredients.length || q ? "Recipes for you" : "Recommended recipes";
+  els.resultSubtitle.textContent = parts.length ? "Results are ranked by your selected cravings and ingredient overlap." : "Sorted according to your selected cravings and available ingredients.";
+  els.saveCount.textContent = saved.size;
+  bindCardEvents();
+}
+
+function bindCardEvents(){
+  els.grid.querySelectorAll("[data-open]").forEach(btn => {
+    btn.addEventListener("click", () => openRecipe(Number(btn.dataset.open)));
+  });
+  els.grid.querySelectorAll("[data-save]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleSave(Number(btn.dataset.save));
+    });
+  });
+}
+
+function toggleSave(id){
+  saved.has(id) ? saved.delete(id) : saved.add(id);
+  localStorage.setItem("tasteFinderSaved", JSON.stringify([...saved]));
+  render();
+  if(currentRecipeId === id && els.modal.classList.contains("open")) updateModalSave();
+  showToast(saved.has(id) ? "Recipe saved" : "Recipe removed from saved");
+}
+
+function openRecipe(id){
+  const recipe = recipes.find(r=>r.id===id);
+  if(!recipe) return;
+  currentRecipeId = id;
+  localStorage.setItem("tasteFinderCurrentRecipe", JSON.stringify(recipe));
+  window.location.href = `recipe.html?id=${recipe.id}`;
+  return;
+  /* The modal markup remains available as a no-navigation fallback. */
+  els.modalImage.innerHTML = recipeImage(recipe,"modal");
+  els.modalTitle.textContent = recipe.title;
+  els.modalDescription.textContent = `${recipe.tags.join(" · ")} recipe with a ${recipe.difficulty.toLowerCase()} prep flow and balanced, practical ingredients.`;
+  els.modalFacts.innerHTML = [
+    `${recipe.time} min`,
+    recipe.difficulty,
+    `★ ${recipe.rating.toFixed(1)}`,
+    `${recipe.servings} servings`,
+    `${recipe.calories} kcal / serving`
+  ].map(x=>`<span class="fact">${escapeHtml(x)}</span>`).join("");
+  els.modalIngredients.innerHTML = recipe.ingredients.map(([name,amount]) =>
+    `<div class="ingredient-row"><span>${escapeHtml(name)}</span><span>${escapeHtml(amount)}</span></div>`
+  ).join("");
+  els.modalSteps.innerHTML = recipe.steps.map((step,i) =>
+    `<div class="step"><div class="step-num">${i+1}</div><div>${escapeHtml(step)}</div></div>`
+  ).join("");
+  els.modalNotes.textContent = recipe.notes;
+  updateModalSave();
+  els.modal.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function updateModalSave(){
+  els.modalSave.textContent = saved.has(currentRecipeId) ? "Remove from saved" : "Save recipe";
+}
+function closeModal(){
+  els.modal.classList.remove("open");
+  document.body.style.overflow="";
+}
+function showToast(text){
+  els.toast.textContent = text;
+  els.toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>els.toast.classList.remove("show"),1800);
+}
+
+function addIngredientFromInput(){
+  const value = els.ingredientInput.value.trim().replace(/,+$/,"");
+  if(!value) return;
+  const parts = value.split(",").map(s=>s.trim()).filter(Boolean);
+  parts.forEach(p=>{
+    const normalized = normalize(p);
+    if(normalized && !selectedIngredients.some(x=>normalize(x)===normalized)) selectedIngredients.push(p);
+  });
+  els.ingredientInput.value="";
+  visibleCount=12;
+  renderIngredients();
+  render();
+}
+
+document.getElementById("cravingChips").addEventListener("click", e=>{
+  const btn=e.target.closest("[data-craving]");
+  if(!btn) return;
+  const craving=btn.dataset.craving;
+  selectedCravings.has(craving)?selectedCravings.delete(craving):selectedCravings.add(craving);
+  visibleCount=12;
+  renderCravings();
+  render();
+});
+
+document.getElementById("addIngredient").addEventListener("click",addIngredientFromInput);
+els.ingredientInput.addEventListener("keydown",e=>{if(e.key==="Enter")addIngredientFromInput()});
+
+els.selectedIngredients.addEventListener("click",e=>{
+  const btn=e.target.closest("[data-remove-ingredient]");
+  if(!btn) return;
+  selectedIngredients.splice(Number(btn.dataset.removeIngredient),1);
+  visibleCount=12;
+  renderIngredients();
+  render();
+});
+
+function doSearch(){
+  visibleCount=12;
+  render();
+}
+els.searchInput.addEventListener("input",()=>{
+  els.clearSearch.classList.toggle("show",!!els.searchInput.value);
+  doSearch();
+});
+document.getElementById("searchBtn").addEventListener("click",doSearch);
+els.searchInput.addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
+els.clearSearch.addEventListener("click",()=>{els.searchInput.value="";els.clearSearch.classList.remove("show");doSearch();els.searchInput.focus()});
+els.sortSelect.addEventListener("change",()=>{visibleCount=12;render()});
+
+document.getElementById("clearFilters").addEventListener("click",()=>{
+  selectedCravings.clear();
+  selectedIngredients=[];
+  els.ingredientInput.value="";
+  renderCravings();
+  renderIngredients();
+  visibleCount=12;
+  render();
+});
+
+els.loadMore.addEventListener("click",()=>{visibleCount+=12;render()});
+
+document.getElementById("savedBtn").addEventListener("click",()=>{
+  const savedRecipes = recipes.filter(r=>saved.has(r.id));
+  if(!savedRecipes.length){
+    showToast("No saved recipes yet");
+    return;
+  }
+  selectedCravings.clear();
+  selectedIngredients=[];
+  els.searchInput.value="";
+  els.clearSearch.classList.remove("show");
+  els.sortSelect.value="rating";
+  renderCravings();renderIngredients();
+  els.grid.innerHTML=savedRecipes.map(cardHTML).join("");
+  els.empty.style.display="none";
+  els.loadMore.style.display="none";
+  els.resultCount.textContent=`${savedRecipes.length} saved recipe${savedRecipes.length===1?"":"s"}`;
+  els.filterSummary.textContent="Your recipes saved on this browser";
+  els.resultTitle.textContent="Recipes Saved";
+  els.resultSubtitle.textContent="Your saved recipes are stored locally in this browser.";
+  bindCardEvents();
+  window.scrollTo({top:document.querySelector("main").offsetTop,behavior:"smooth"});
+});
+
+document.getElementById("homeBtn").addEventListener("click",()=>location.reload());
+document.getElementById("homeLink").addEventListener("click",e=>{e.preventDefault();window.location.href="taste-finder.html"});
+
+els.closeModal.addEventListener("click",closeModal);
+document.getElementById("modalCloseBottom").addEventListener("click",closeModal);
+els.modal.addEventListener("click",e=>{if(e.target===els.modal)closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&els.modal.classList.contains("open"))closeModal()});
+
+els.modalSave.addEventListener("click",()=>toggleSave(currentRecipeId));
+els.modalShare.addEventListener("click",async()=>{
+  const recipe=recipes.find(r=>r.id===currentRecipeId);
+  if(!recipe)return;
+  localStorage.setItem("tasteFinderCurrentRecipe", JSON.stringify(recipe));
+  window.location.href = `share.html?id=${recipe.id}`;
+});
+
+renderCravings();
+renderIngredients();
+render();
+</script>
+</body>
+</html>

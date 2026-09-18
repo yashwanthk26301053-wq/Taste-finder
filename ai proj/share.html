@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Recipe | Taste Finder</title>
+<style>
+  :root{--bg:#fffdf9;--text:#202124;--muted:#73777d;--border:#dddfe3;--accent:#f46f3e;--dark:#db5c2d}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Arial,sans-serif}a{color:inherit;text-decoration:none}header{border-bottom:1px solid var(--border)}nav{width:min(760px,calc(100% - 32px));height:72px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;letter-spacing:2px;font-size:22px}.home,.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid var(--border);border-radius:10px;background:white;font-weight:800}.home{font-size:14px}main{width:min(650px,calc(100% - 32px));margin:70px auto;text-align:center}h1{font-size:clamp(32px,6vw,50px);line-height:1.08;margin:0 0 14px}.muted{color:var(--muted)}.share-box{margin-top:28px;padding:24px;background:white;border:1px solid var(--border);border-radius:16px;text-align:left}.link{padding:12px;background:#f6f7f8;border-radius:8px;word-break:break-all;color:var(--muted);font-size:14px}.actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:20px}.button.primary{background:var(--accent);border-color:var(--accent);color:white}.button.primary:hover{background:var(--dark)}#status{min-height:24px;margin-top:14px;color:var(--dark);font-weight:700}
+</style>
+</head>
+<body>
+<header><nav><a class="brand" href="taste-finder.html">TASTE FINDER</a><a class="home" href="taste-finder.html">Go to home</a></nav></header>
+<main id="content"></main>
+<script>
+const recipe=JSON.parse(localStorage.getItem("tasteFinderCurrentRecipe")||"null");
+const content=document.getElementById("content");
+if(!recipe){content.innerHTML='<h1>Nothing to share yet</h1><p class="muted">Open a recipe from the home page first.</p><div class="actions"><a class="button primary" href="taste-finder.html">Browse recipes</a></div>'}
+else{
+ const shareUrl=new URL(`recipe.html?id=${recipe.id}`,location.href).href;
+ content.innerHTML=`<h1>Share ${recipe.title}</h1><p class="muted">Send this recipe to someone who would enjoy cooking it.</p><div class="share-box"><div class="link">${shareUrl}</div><div class="actions"><button class="button primary" id="copy">Copy recipe link</button><button class="button" id="native">Share</button><a class="button" href="recipe.html?id=${recipe.id}">View recipe</a></div><div id="status" role="status"></div></div>`;
+ document.getElementById("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(shareUrl);document.getElementById("status").textContent="Recipe link copied."}catch{document.getElementById("status").textContent="Copy is unavailable here. Select the link above to copy it."}});
+ document.getElementById("native").addEventListener("click",async()=>{if(navigator.share){try{await navigator.share({title:recipe.title,text:`${recipe.title} - ${recipe.time} min`,url:shareUrl});document.getElementById("status").textContent="Share sheet opened."}catch{}}else document.getElementById("status").textContent="Use Copy recipe link to share this recipe."});
+}
+</script>
+</body>
+</html>
